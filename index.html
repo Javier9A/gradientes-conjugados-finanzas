@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GCP en la Planificación Financiera · Métodos Numéricos UMSA</title>
+  <meta name="description" content="Aplicación interactiva del Método de Gradientes Conjugados Precondicionado en la planificación financiera de presupuestos de TI. UMSA, Carrera de Informática.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#contenido">Saltar al contenido</a>
+
+  <header class="topbar">
+    <div class="wrap bar">
+      <strong class="brand">GCP · Finanzas</strong>
+      <nav aria-label="Secciones">
+        <a href="#inicio">1 Inicio</a>
+        <a href="#caso">2 Caso</a>
+        <a href="#formulacion">3 Formulación</a>
+        <a href="#editor">4 Editor</a>
+        <a href="#escenarios">5 Escenarios</a>
+        <a href="#comparacion">6 Comparación</a>
+        <a href="#tablas">7 Tablas</a>
+        <a href="#convergencia">8 Convergencia</a>
+        <a href="#qa">9 QA</a>
+        <a href="#conclusiones">10 Conclusiones</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido">
+
+    <!-- 1. INICIO -->
+    <section id="inicio" class="hero">
+      <div class="wrap">
+        <p class="eyebrow">Universidad Mayor de San Andrés · Facultad de Ciencias Puras y Naturales · Carrera de Informática</p>
+        <h1>Aplicación del Método de Gradientes Conjugados Precondicionado en la Planificación Financiera</h1>
+        <p class="lead">Desafío académico de Métodos Numéricos · Mención Ingeniería de Sistemas · Modalidad individual. Se resuelve <code>Ax = b</code> para repartir presupuestos entre cuatro departamentos de TI y se compara una solución directa (Cholesky) con GC y GCP (Jacobi) en tres escenarios.</p>
+        <div class="card student">
+          <h2>Datos del estudiante <small>(editables, se guardan en este navegador)</small></h2>
+          <div class="form-grid">
+            <label>Estudiante<input id="st-nombre" type="text" autocomplete="name"></label>
+            <label>Carrera<input id="st-carrera" type="text"></label>
+            <label>Universidad<input id="st-universidad" type="text"></label>
+            <label>Mención<input id="st-mencion" type="text"></label>
+            <label>Materia<input id="st-materia" type="text"></label>
+            <label>Docente<input id="st-docente" type="text" placeholder="Nombre del docente"></label>
+            <label>Fecha<input id="st-fecha" type="date"></label>
+          </div>
+        </div>
+        <div class="grid3 synth">
+          <div class="card"><h3>Modelo</h3><p>Costo cuadrático ½xᵀAx − bᵀx de cuatro áreas; su mínimo cumple <code>Ax = b</code> con A simétrica definida positiva.</p></div>
+          <div class="card"><h3>Métodos</h3><p>Cholesky (referencia), Gradientes Conjugados (GC) y GC Precondicionado con Jacobi, tolerancia 10⁻⁶.</p></div>
+          <div class="card"><h3>Producto</h3><p>Página interactiva: edite A, b, x₀, tolerancia y máximo de iteraciones y todo se recalcula.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. CASO -->
+    <section id="caso">
+      <div class="wrap">
+        <h2><span class="num">2</span> Caso financiero y variables</h2>
+        <p>Una empresa debe distribuir su presupuesto anual de tecnología entre cuatro departamentos. Cada variable <em>xᵢ</em> es el presupuesto asignado al departamento <em>i</em>, expresado en <strong>miles de bolivianos (Bs)</strong>.</p>
+        <div id="var-cards" class="grid4"></div>
+
+        <div class="grid2">
+          <div class="card">
+            <h3>¿Por qué aparece Ax = b?</h3>
+            <p>La empresa elige <strong>x</strong> minimizando una función de costo cuadrática:</p>
+            <p class="formula">J(x) = ½ xᵀAx − bᵀx</p>
+            <ul>
+              <li><strong>a<sub>ii</sub> &gt; 0</strong>: costo marginal creciente del departamento <em>i</em> (rendimientos decrecientes).</li>
+              <li><strong>a<sub>ij</sub></strong> (i ≠ j): interdependencia; positivo = competencia por recursos compartidos (personal, centro de datos).</li>
+              <li><strong>b<sub>i</sub></strong>: demanda o valor estratégico ponderado de financiar el departamento <em>i</em>.</li>
+            </ul>
+            <p>El gradiente ∇J = Ax − b se anula en el óptimo, y como A es simétrica definida positiva, J es estrictamente convexa y el óptimo es único. Por eso se exigen esas dos propiedades.</p>
+          </div>
+          <div class="card">
+            <h3>Procedencia y justificación de los datos</h3>
+            <p><strong>Los datos son sintéticos y didácticos</strong>: no provienen de una empresa real. Se calibraron con criterios de proporcionalidad habituales en presupuestos de TI (el desarrollo concentra más gasto en personal; la infraestructura es intensiva en capital y en divisas; el soporte es gasto operativo menor).</p>
+            <p>Cada escenario lleva su justificación en la sección 5. Puede reemplazar cualquier valor en el editor (sección 4) por datos reales.</p>
+            <h3>Reglas de negocio (Ingeniería de Sistemas)</h3>
+            <ul>
+              <li>R1. A debe ser simétrica y definida positiva; si no, la ejecución se bloquea.</li>
+              <li>R2. Un presupuesto negativo no tiene sentido; si aparece, se emite un aviso.</li>
+              <li>R3. Se muestra la participación porcentual de cada departamento en el total.</li>
+              <li>R4. Los escenarios comparten variables y estructura; solo cambian coeficientes y b.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. FORMULACIÓN -->
+    <section id="formulacion" class="alt">
+      <div class="wrap">
+        <h2><span class="num">3</span> Formulación del sistema Ax = b</h2>
+        <p>Se muestra el sistema cargado actualmente en el editor. Se actualiza mientras usted edita.</p>
+        <span id="badge-escenario" class="badge ok">Escenario activo</span>
+        <div class="card scroll"><h3>Forma matricial</h3><div id="form-matriz"></div></div>
+        <div class="grid2">
+          <div class="card"><h3>Sistema de ecuaciones</h3><div id="form-sistema"></div>
+            <p class="muted small">Interpretación: cada ecuación expresa el equilibrio de un departamento. El coeficiente a<sub>ii</sub> penaliza su propio gasto y a<sub>ij</sub> mide cómo el gasto del departamento <em>j</em> encarece (si es positivo) al <em>i</em>.</p></div>
+          <div class="card"><h3>Verificación: A simétrica definida positiva</h3><div id="form-spd"></div></div>
+        </div>
+        <details class="card algo">
+          <summary>Algoritmo GCP implementado (según el planteamiento del desafío)</summary>
+          <ol>
+            <li>x₀ dado (por defecto 0); r₀ = b − Ax₀.</li>
+            <li>Construir M = diag(A) (Jacobi). Resolver M z₀ = r₀ y hacer p₀ = z₀.</li>
+            <li>Para k = 0, 1, 2…: α<sub>k</sub> = (r<sub>k</sub>ᵀz<sub>k</sub>) / (p<sub>k</sub>ᵀAp<sub>k</sub>).</li>
+            <li>x<sub>k+1</sub> = x<sub>k</sub> + α<sub>k</sub>p<sub>k</sub>; r<sub>k+1</sub> = r<sub>k</sub> − α<sub>k</sub>Ap<sub>k</sub>.</li>
+            <li>Parar si ‖r<sub>k+1</sub>‖₂/‖b‖₂ &lt; tol o si k+1 = N<sub>máx</sub>.</li>
+            <li>Resolver M z<sub>k+1</sub> = r<sub>k+1</sub>; β<sub>k</sub> = (r<sub>k+1</sub>ᵀz<sub>k+1</sub>) / (r<sub>k</sub>ᵀz<sub>k</sub>); p<sub>k+1</sub> = z<sub>k+1</sub> + β<sub>k</sub>p<sub>k</sub>.</li>
+          </ol>
+          <p class="muted small">El GC simple es el mismo algoritmo con M = I. Se controlan las divisiones entre cero (pᵀAp ≤ 0 o rᵀz ≤ 0 detienen la ejecución con un mensaje).</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- 4. EDITOR -->
+    <section id="editor">
+      <div class="wrap">
+        <h2><span class="num">4</span> Editor interactivo de datos</h2>
+        <p>Modifique cualquier celda: el sistema se valida y se recalcula automáticamente. Acepta punto o coma decimal y notación científica (ej. <code>1e-6</code>).</p>
+        <span id="badge-escenario-2" class="badge ok">Escenario activo</span>
+        <div class="card">
+          <h3>Matriz A y vector b</h3>
+          <div id="editor-matriz" class="table-wrap"></div>
+          <label class="check"><input id="sym-auto" type="checkbox" checked> Mantener la simetría automáticamente (al editar aᵢⱼ se copia a aⱼᵢ). Desactívela para probar matrices no simétricas.</label>
+          <h3>Parámetros de ejecución</h3>
+          <div class="params">
+            <label><span>Tolerancia (‖rₖ‖₂/‖b‖₂ &lt; tol)</span><input id="tol" class="cell" type="text" inputmode="decimal" value="1e-6"></label>
+            <label><span>Máximo de iteraciones N<sub>máx</sub></span><input id="maxiter" class="cell" type="text" inputmode="numeric" value="1000"></label>
+            <label><span>Precondicionador</span><input type="text" value="Jacobi (diagonal): M = diag(A)" readonly></label>
+          </div>
+          <h3>Vector inicial x₀</h3>
+          <div id="editor-x0" class="table-wrap"></div>
+          <div class="actions">
+            <button id="btn-recalc" class="btn" type="button">Recalcular</button>
+            <button id="btn-reset" class="btn ghost" type="button">Restablecer escenario y parámetros</button>
+          </div>
+          <div id="editor-errores" class="alert" role="status" aria-live="polite" hidden></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. ESCENARIOS -->
+    <section id="escenarios" class="alt">
+      <div class="wrap">
+        <h2><span class="num">5</span> Los tres escenarios</h2>
+        <p>Comparten las mismas cuatro variables y la estructura del modelo; cambian de forma fundamentada los coeficientes de A, los valores de b, o ambos.</p>
+        <div id="scen-cards" class="grid3"></div>
+        <div class="actions"><button id="btn-todos" class="btn secondary" type="button">Ejecutar los tres escenarios y comparar</button></div>
+      </div>
+    </section>
+
+    <!-- 6. COMPARACIÓN -->
+    <section id="comparacion">
+      <div class="wrap">
+        <h2><span class="num">6</span> Comparación: referencia, GC y GCP</h2>
+        <p class="js-placeholder alert error" hidden>Los datos actuales no son válidos. Corríjalos en el editor (sección 4) para ver los resultados.</p>
+        <div class="js-result">
+          <div id="kpis"></div>
+          <div class="grid2">
+            <div class="card"><h3>Vectores solución (miles de Bs)</h3><div class="table-wrap"><table id="tabla-comparacion"></table></div></div>
+            <div class="card"><h3>Distribución del presupuesto (referencia)</h3><div id="barras" class="bars"></div></div>
+          </div>
+          <div class="card note"><h3>En palabras sencillas</h3><p id="explicacion"></p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. TABLAS -->
+    <section id="tablas" class="alt">
+      <div class="wrap">
+        <h2><span class="num">7</span> Errores, residuos, iteraciones y condicionamiento</h2>
+        <p class="js-placeholder alert error" hidden>Los datos actuales no son válidos. Corríjalos en el editor (sección 4) para ver los resultados.</p>
+        <div class="js-result">
+          <div class="card"><h3>Errores por variable del GCP respecto de la referencia</h3>
+            <div class="table-wrap"><table id="tabla-err-gcp"></table></div>
+            <p class="muted small">Eₐ = |x_ref − x_GCP|; Eᵣ = Eₐ/|x_ref| (no definido si x_ref = 0); Eₚ = Eᵣ × 100 %.</p></div>
+          <details class="card"><summary>Errores por variable del GC simple (contraste)</summary><div class="table-wrap"><table id="tabla-err-gc"></table></div></details>
+          <div class="card"><h3>Iteraciones, residuos y convergencia</h3><div class="table-wrap"><table id="tabla-metodos"></table></div></div>
+          <div class="card"><h3>Números de condición</h3><div class="table-wrap"><table id="tabla-cond"></table></div><p id="nota-cond" class="muted small"></p></div>
+          <details class="card"><summary>Residuo relativo en cada iteración</summary><div class="table-wrap"><table id="tabla-iter"></table></div><p id="nota-iter" class="muted small"></p></details>
+        </div>
+        <div class="card" id="tabla-comparativa">
+          <h3>Tabla comparativa de los tres escenarios</h3>
+          <p class="muted small">Se calcula con los sistemas originales de cada escenario, x₀ = 0 y la tolerancia y el máximo de iteraciones actuales del editor.</p>
+          <div id="tabla-comparativa-host"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. CONVERGENCIA -->
+    <section id="convergencia">
+      <div class="wrap">
+        <h2><span class="num">8</span> Gráfico de convergencia</h2>
+        <p class="js-placeholder alert error" hidden>Los datos actuales no son válidos. Corríjalos en el editor (sección 4) para ver el gráfico.</p>
+        <div class="js-result card">
+          <div class="legend"><span><i class="dot gc"></i> GC simple</span><span><i class="dot gcp"></i> GCP (Jacobi)</span><span><i class="dot tolc"></i> Tolerancia</span></div>
+          <div class="chart-box"><canvas id="chart" role="img" aria-label="Residuo relativo por iteración de GC y GCP en escala logarítmica"></canvas><div id="chart-tip" class="chart-tip" hidden></div></div>
+          <p id="resumen-grafico" class="muted"></p>
+          <p class="muted small">Cuanto más rápido baja la curva hasta cruzar la línea roja, más rápido converge el método. Pase el cursor sobre el gráfico para ver los valores.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. QA -->
+    <section id="qa" class="alt">
+      <div class="wrap">
+        <h2><span class="num">9</span> Módulo de pruebas de software (QA)</h2>
+        <p>Las pruebas se ejecutan al pulsar el botón, con el código real de esta página. Ninguna figura como aprobada hasta ejecutarse; al terminar se restaura el estado del editor.</p>
+        <div class="actions"><button id="btn-qa" class="btn" type="button">Ejecutar todas las pruebas</button><span id="qa-resumen" class="badge neutral">Sin ejecutar</span></div>
+        <div class="card table-wrap">
+          <table class="qa">
+            <thead><tr><th>Prueba</th><th>Entrada</th><th>Resultado esperado</th><th>Resultado obtenido</th><th>Conclusión</th></tr></thead>
+            <tbody id="qa-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. CONCLUSIONES -->
+    <section id="conclusiones">
+      <div class="wrap">
+        <h2><span class="num">10</span> Conclusiones y bibliografía</h2>
+        <div class="card"><h3>Conclusiones basadas en los resultados</h3><p class="muted small">Se generan con los números calculados por esta página para la tolerancia y el máximo de iteraciones actuales.</p><ol id="conclusiones-lista" class="concl"></ol></div>
+        <div class="card">
+          <h3>Referencias</h3>
+          <ul class="refs">
+            <li>Suñagua S., P. (2020). Método de Gradientes Conjugados Precondicionado. <em>Revista Boliviana de Matemática – UMSA</em>, 04, 2–7.</li>
+            <li>Golub, G. H., &amp; Van Loan, C. F. (2013). <em>Matrix Computations</em> (4th ed.). Johns Hopkins University Press.</li>
+            <li>Saad, Y. (2003). <em>Iterative Methods for Sparse Linear Systems</em> (2nd ed.). SIAM.</li>
+          </ul>
+          <p class="muted small">Fuente de los datos numéricos: valores sintéticos definidos en este proyecto (ver sección 5).</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><div class="wrap">Métodos Numéricos · UMSA, Carrera de Informática · Página estática en HTML, CSS y JavaScript puro: abra <code>index.html</code> en el navegador.</div></footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
